@@ -1,0 +1,66 @@
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters,
+)
+
+TOKEN = "8690979993:AAGCuSVTcPvYs5eBzJYGJ2z-XbqJxXia3vQ"
+ADMIN_ID = 1081254589
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    button = KeyboardButton(
+        text="📱 ارسال شماره موبایل",
+        request_contact=True
+    )
+
+    keyboard = ReplyKeyboardMarkup(
+        [[button]],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
+
+    await update.message.reply_text(
+        "👋 سلام\n\n"
+        "برای ادامه شماره موبایل خود را ارسال کنید.",
+        reply_markup=keyboard
+    )
+
+async def receive_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if not update.message.contact:
+        return
+
+    contact = update.message.contact
+    user = update.effective_user
+
+    text = (
+        f"📱 شماره جدید دریافت شد\n\n"
+        f"نام: {contact.first_name}\n"
+        f"شماره: {contact.phone_number}\n"
+        f"User ID: {user.id}"
+    )
+
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=text
+    )
+
+    await update.message.reply_text(
+        "✅ شماره موبایل ثبت شد."
+    )
+
+def main():
+    app = Application.builder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.CONTACT, receive_contact))
+
+    print("Bot Started...")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
